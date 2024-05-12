@@ -35,6 +35,9 @@ func main() {
 	router.Get("/v1/user", api.getUserApiHandler)
 	router.Post("/v1/feed", api.middlewareAuth(api.createFeedHandler))
 	router.Get("/v1/feeds", api.getFeed)
+	router.Post("/v1/feed_follow", api.middlewareAuth(api.createFeedFollowHandler))
+	router.Delete("/v1/feed_follow/{id}", api.middlewareAuth(api.deleteFeedFollowHandler))
+	router.Get("/v1/feed_follow", api.middlewareAuth(api.getFeedFollow))
 
 	srv := &http.Server{
 		Addr:    ":" + Port,
@@ -49,10 +52,14 @@ func main() {
 func respondWithJSON(w http.ResponseWriter, status int, payload interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	payloadBytes, _ := json.Marshal(payload)
-	_, err := w.Write(payloadBytes)
-	if err != nil {
-		slog.Error("Error writing response")
+	if payload == nil {
+		fmt.Fprint(w, "deleted")
+	} else {
+		payloadBytes, _ := json.Marshal(payload)
+		_, err := w.Write(payloadBytes)
+		if err != nil {
+			slog.Error("Error writing response")
+		}
 	}
 
 }
